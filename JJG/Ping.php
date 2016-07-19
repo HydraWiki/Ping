@@ -24,14 +24,14 @@
 namespace JJG;
 
 class Ping {
-	
+
 	private $host;
 	private $ttl;
 	private $timeout;
 	private $port = 80;
 	private $data = 'Ping';
 	private $commandOutput;
-	
+
 	/**
 	 * Called when the Ping object is created.
 	 *
@@ -55,12 +55,12 @@ class Ping {
 		if (!isset($host)) {
 			throw new \Exception("Error: Host name not supplied.");
 		}
-		
+
 		$this->host    = $host;
 		$this->ttl     = $ttl;
 		$this->timeout = $timeout;
 	}
-	
+
 	/**
 	 * Set the ttl (in hops).
 	 *
@@ -70,7 +70,7 @@ class Ping {
 	public function setTtl($ttl) {
 		$this->ttl = $ttl;
 	}
-	
+
 	/**
 	 * Get the ttl.
 	 *
@@ -80,7 +80,7 @@ class Ping {
 	public function getTtl() {
 		return $this->ttl;
 	}
-	
+
 	/**
 	 * Set the timeout.
 	 *
@@ -90,7 +90,7 @@ class Ping {
 	public function setTimeout($timeout) {
 		$this->timeout = $timeout;
 	}
-	
+
 	/**
 	 * Get the timeout.
 	 *
@@ -100,7 +100,7 @@ class Ping {
 	public function getTimeout() {
 		return $this->timeout;
 	}
-	
+
 	/**
 	 * Set the host.
 	 *
@@ -110,7 +110,7 @@ class Ping {
 	public function setHost($host) {
 		$this->host = $host;
 	}
-	
+
 	/**
 	 * Get the host.
 	 *
@@ -120,7 +120,7 @@ class Ping {
 	public function getHost() {
 		return $this->host;
 	}
-	
+
 	/**
 	 * Set the port (only used for fsockopen method).
 	 *
@@ -134,7 +134,7 @@ class Ping {
 	public function setPort($port) {
 		$this->port = $port;
 	}
-	
+
 	/**
 	 * Get the port (only used for fsockopen method).
 	 *
@@ -144,7 +144,7 @@ class Ping {
 	public function getPort() {
 		return $this->port;
 	}
-	
+
 	/**
 	 * Return the command output when method=exec.
 	 * @return string
@@ -152,7 +152,7 @@ class Ping {
 	public function getCommandOutput() {
 		return $this->commandOutput;
 	}
-	
+
 	/**
 	 * Matches an IP on command output and returns.
 	 * @return string
@@ -164,7 +164,7 @@ class Ping {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Ping a host.
 	 *
@@ -181,25 +181,25 @@ class Ping {
 	 */
 	public function ping($method = 'exec') {
 		$latency = false;
-		
+
 		switch ($method) {
 			case 'exec':
 				$latency = $this->pingExec();
 				break;
-			
+
 			case 'fsockopen':
 				$latency = $this->pingFsockopen();
 				break;
-			
+
 			case 'socket':
 				$latency = $this->pingSocket();
 				break;
 		}
-		
+
 		// Return the latency.
 		return $latency;
 	}
-	
+
 	/**
 	 * The exec method uses the possibly insecure exec() function, which passes
 	 * the input to the system. This is potentially VERY dangerous if you pass in
@@ -210,11 +210,11 @@ class Ping {
 	 */
 	private function pingExec() {
 		$latency = false;
-		
+
 		$ttl     = escapeshellcmd($this->ttl);
 		$timeout = escapeshellcmd($this->timeout);
 		$host    = escapeshellcmd($this->host);
-		
+
 		// Exec string for Windows-based systems.
 		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 			// -n = number of pings; -i = ttl; -w = timeout (in milliseconds).
@@ -230,9 +230,9 @@ class Ping {
 			// -n = numeric output; -c = number of pings; -t = ttl; -W = timeout
 			$exec_string = 'ping -n -c 1 -t ' . $ttl . ' -W ' . $timeout . ' ' . $host;
 		}
-		
+
 		exec($exec_string." 2>&1", $output, $return);
-		
+
 		// Strip empty lines and reorder the indexes from 0 (to make results more
 		// uniform across OS versions).
 		$this->commandOutput = implode($output, '');
@@ -248,10 +248,10 @@ class Ping {
 				$latency = floatval($matches['time']);
 			}
 		}
-		
+
 		return $latency;
 	}
-	
+
 	/**
 	 * The fsockopen method simply tries to reach the host on a port. This method
 	 * is often the fastest, but not necessarily the most reliable. Even if a host
@@ -273,7 +273,7 @@ class Ping {
 		}
 		return $latency;
 	}
-	
+
 	/**
 	 * The socket method uses raw network packet data to try sending an ICMP ping
 	 * packet to a server, then measures the response time. Using this method
@@ -292,13 +292,13 @@ class Ping {
 		$identifier = "\x00\x00";
 		$seq_number = "\x00\x00";
 		$package    = $type . $code . $checksum . $identifier . $seq_number . $this->data;
-		
+
 		// Calculate the checksum.
 		$checksum = $this->calculateChecksum($package);
-		
+
 		// Finalize the package.
 		$package = $type . $code . $checksum . $identifier . $seq_number . $this->data;
-		
+
 		// Create a socket, connect to server, then read socket and calculate.
 		if ($socket = socket_create(AF_INET, SOCK_RAW, 1)) {
 			socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array(
@@ -323,7 +323,7 @@ class Ping {
 		socket_close($socket);
 		return $latency;
 	}
-	
+
 	/**
 	 * Calculate a checksum.
 	 *
@@ -337,14 +337,14 @@ class Ping {
 		if (strlen($data) % 2) {
 			$data .= "\x00";
 		}
-		
+
 		$bit = unpack('n*', $data);
 		$sum = array_sum($bit);
-		
+
 		while ($sum >> 16) {
 			$sum = ($sum >> 16) + ($sum & 0xffff);
 		}
-		
+
 		return pack('n*', ~$sum);
 	}
 }
