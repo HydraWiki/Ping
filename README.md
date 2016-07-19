@@ -1,9 +1,4 @@
-<img src="https://raw.githubusercontent.com/geerlingguy/Ping/1.x/Resources/Ping-Logo.png" alt="Ping for PHP Logo" />
-
 # Ping
-
-[![Build Status](https://travis-ci.org/geerlingguy/Ping.svg?branch=1.x)](https://travis-ci.org/geerlingguy/Ping)
-
 A PHP class to ping hosts.
 
 There are a ton of different methods of pinging a server using PHP, and I've found most to be poorly documented or downright dangerous in their implementation.
